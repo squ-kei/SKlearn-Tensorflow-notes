@@ -135,3 +135,34 @@ class MyDense(keras.layers.Layer):
         return {**base_config, "units": self.units,
                 "activation": keras.activations.serialize(self.activation)}
 ```
+The init method define some setup for the layer, the build method actually construct the layer by explicitly define the kernel and bias shape and then initialize them. The call method does the actual computation and return the result of the layer.  
+**Notice that the super().build method must be called in the end.**
+For layers with multiple inputs, the call() method receives tuple containing all the inputs and returns the list of output. The compute_output_shape() method receives a tuple containing each input's batch shape and returns the list of batch output shapes.
+```python
+class MyMultiLayer(keras.layers.Layer):
+    def call(self, X):
+        X1, X2 = X
+        return X1 + X2, X1 * X2
+
+    def compute_output_shape(self, batch_input_shape):
+        batch_input_shape1, batch_input_shape2 = batch_input_shape
+        return [batch_input_shape1, batch_input_shape2]
+```
+For layers behave different during training and testing, must add a "training" argument to the call() method. e.g.
+```python
+class AddGaussianNoise(keras.layers.Layer):
+    def __init__(self, stddev, **kwargs):
+        super().__init__(**kwargs)
+        self.stddev = stddev
+
+    def call(self, X, training=None):
+        if training:
+            noise = tf.random.normal(tf.shape(X), stddev=self.stddev)
+            return X + noise
+        else:
+            return X
+
+    def compute_output_shape(self, batch_input_shape):
+        return batch_input_shape
+```
+## Custom Models
