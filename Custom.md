@@ -1,5 +1,5 @@
 ## Custom Loss Functions
-There are several ways to define custom loss functions
+There are several ways to define custom loss functions  
 **1. If there is no parameter comes with the loss function, you can directly define a function then use it when compile the model.**
 ```python
 def huber_fn(y_true,y_pred):
