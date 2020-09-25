@@ -34,6 +34,6 @@ when save the model, parameters will be saved along with it, when load the model
 ```python
 model = keras.models.load_model("model_with_custom_loss.h5", custom_objects={"Huberloss":Huberloss})
 ```
-**When using custom object in a model, always map the object to its' name when load the corresponding model. Using subclassing if it is possible. ** 
+**When using custom object in a model, always map the object to its' name when load the corresponding model. Using subclassing if it is possible.**  
 
 ## Custom Activation
