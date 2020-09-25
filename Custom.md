@@ -1,6 +1,6 @@
 ## Custom Loss Functions
 There are several ways to define custom loss functions
-1.  If there is no parameter comes with the loss function, you can directly define a function then use it when compile the model.
+**1. If there is no parameter comes with the loss function, you can directly define a function then use it when compile the model.**
 ```python
 def huber_fn(y_true,y_pred):
     error = y_ture - y_pred
@@ -14,7 +14,7 @@ When load the model with custom objects, you need to map the names to the object
 model = keras.models.load_model("model_with_custom_loss.h5", custom_objects={"huber_fn":huber_fn})
 ```
 The issue is when save the model, threshold will not be saved.  
- 2.   **A better way is to subclassing the keras.losses.Loss class, then implementing get_config() method. This way can be used to all other component of a model**
+ **2.   A better way is to subclassing the keras.losses.Loss class, then implementing get_config() method. This way can be used to all other component of a model**
 ```python
 class Huberloss(keras.losses.Loss):
     def __init__(self, threshold=1.0, **kwargs):
