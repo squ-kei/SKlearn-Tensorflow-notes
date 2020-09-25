@@ -79,3 +79,59 @@ class HuberMetric(keras.metrics.Metric):
         base_config = super().get_config()
         return {**base_config, "threshold": self.threshold}
 ```
+Another implementation with sample weights:
+```python
+def create_huber(threshold=1.0):
+    def huber_fn(y_true, y_pred):
+        error = y_true - y_pred
+        is_small_error = tf.abs(error) < threshold
+        squared_loss = tf.square(error) / 2
+        linear_loss  = threshold * tf.abs(error) - threshold**2 / 2
+        return tf.where(is_small_error, squared_loss, linear_loss)
+    return huber_fn
+    
+class HuberMetric(keras.metrics.Mean):
+    def __init__(self, threshold=1.0, name='HuberMetric', dtype=None):
+        self.threshold = threshold
+        self.huber_fn = create_huber(threshold)
+        super().__init__(name=name, dtype=dtype)
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        metric = self.huber_fn(y_true, y_pred)
+        super(HuberMetric, self).update_state(metric, sample_weight)
+    def get_config(self):
+        base_config = super().get_config()
+        return {**base_config, "threshold": self.threshold}
+```
+Here in the update_state method, super(HuberMetric,self).update_state calls the update_state method from the immediate parent class of HuberMetric which is the keras.metrics.Metric.  
+## Custom Layers
+A simple tool is the keras.layers.Lambda layer. E.g.
+```python
+exponential_layer = keras.layers.Lambda(lambda x: tf.exp(x))
+```
+For a custom layer with weights, you need to create a subclass of the keras.layers.Layer class.
+```python
+class MyDense(keras.layers.Layer):
+    def __init__(self, units, activation=None, **kwargs):
+        super().__init__(**kwargs)
+        self.units = units
+        self.activation = keras.activations.get(activation)
+
+    def build(self, batch_input_shape):
+        self.kernel = self.add_weight(
+            name="kernel", shape=[batch_input_shape[-1], self.units],
+            initializer="glorot_normal")
+        self.bias = self.add_weight(
+            name="bias", shape=[self.units], initializer="zeros")
+        super().build(batch_input_shape) # must be at the end
+
+    def call(self, X):
+        return self.activation(X @ self.kernel + self.bias)
+
+    def compute_output_shape(self, batch_input_shape):
+        return tf.TensorShape(batch_input_shape.as_list()[:-1] + [self.units])
+
+    def get_config(self):
+        base_config = super().get_config()
+        return {**base_config, "units": self.units,
+                "activation": keras.activations.serialize(self.activation)}
+```
