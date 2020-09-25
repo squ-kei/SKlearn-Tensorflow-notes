@@ -136,7 +136,7 @@ class MyDense(keras.layers.Layer):
                 "activation": keras.activations.serialize(self.activation)}
 ```
 The init method define some setup for the layer, the build method actually construct the layer by explicitly define the kernel and bias shape and then initialize them. The call method does the actual computation and return the result of the layer.  
-**Notice that the super().build method must be called in the end.**
+**Notice that the super().build method must be called in the end.**  
 For layers with multiple inputs, the call() method receives tuple containing all the inputs and returns the list of output. The compute_output_shape() method receives a tuple containing each input's batch shape and returns the list of batch output shapes.
 ```python
 class MyMultiLayer(keras.layers.Layer):
